@@ -1,11 +1,13 @@
 package com.bridgelabz.bookstoreapp.service;
-import com.bridgelabz.bookstoreapp.dto.CartDto;
-import com.bridgelabz.bookstoreapp.entity.BookData;
-import com.bridgelabz.bookstoreapp.entity.Cart;
-import com.bridgelabz.bookstoreapp.entity.User;
+
+import com.bridgelabz.bookstoreapp.dto.CartDTO;
+import com.bridgelabz.bookstoreapp.exception.BookStoreException;
+import com.bridgelabz.bookstoreapp.model.BookData;
+import com.bridgelabz.bookstoreapp.model.CartData;
+import com.bridgelabz.bookstoreapp.model.UserData;
 import com.bridgelabz.bookstoreapp.repository.BookRepository;
-import com.bridgelabz.bookstoreapp.repository.CartRepo;
-import com.bridgelabz.bookstoreapp.repository.UserRepository;
+import com.bridgelabz.bookstoreapp.repository.CartRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,71 +15,99 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class CartService implements ICartService{
-    @Autowired
-    CartRepo cartRepo;
-    @Autowired
-    UserRepository userRepo;
-    @Autowired
-    BookRepository bookRepo;
+@Slf4j
+public class CartService implements CartServiceImpl {
+
+
 
     @Autowired
-    IUserService userService;
+    private BookService bookService;
+    @Autowired
+    private CartRepository cartRepository;
 
     @Autowired
-    IBookService bookService;
+    private BookRepository bookRepo;
+    @Autowired
+    private UserService userService;
+
     @Override
-    public Cart addToCart(long userId, CartDto cartDto) {
-        User user = userRepo.findById(userId).orElse(null);
-        BookData book = bookService.getBookById(cartDto.getBookId());
-        if(user != null && book != null){
-            int cartPrice = (int) (book.getPrice() * cartDto.getQuantity());
-            Cart cart = new Cart(user,book,cartPrice,cartDto);
-            return cartRepo.save(cart);
-        }
-        return null;
+    public List<CartData> getCartByUserId(int userId){
+        List<CartData> cartdata = cartRepository.findByUserId(userId);
+        if(cartdata.isEmpty())
+            throw new BookStoreException("Cart details with UserId " + userId + " does not exit..!");
+         return cartdata;
     }
 
     @Override
-    public String deleteById(int cartid) {
-        Optional<Cart> cart = cartRepo.findById(cartid);
-        if(cart != null) {
-            cartRepo.deleteById(cartid);
-        }
-        return "cart is empty";
+    public List<CartData> getCart(){
+        return cartRepository.findAll();
     }
 
+
     @Override
-    public String changeCartQty(long userId, int cartId, CartDto cartDto) {
-        User user = userRepo.findById(userId).orElse(null);
+    public CartData addToCart(int userId, CartDTO cartDTO) {
 
-        Cart cart = cartRepo.findById(cartId).orElse(null);
-
-        if(cart != null && user != null){
-            BookData book = bookRepo.findById(cartDto.getBookId()).orElse(null);
-            if(book != null){
-
-                cart.setQuantity(cartDto.getQuantity());
-                cart.setTotalPrice((int) (book.getPrice() * cartDto.getQuantity()));
-
-                return "Updated with quantity : "+cartRepo.save(cart);
+        BookData book = bookService.getBookModelById(cartDTO.getBookId());
+        UserData user = userService.getUserDataById(userId);
+        Integer existingDataId = cartRepository.getExistingItemOfCart(cartDTO.getBookId(), userId);
+        if(existingDataId == null && book != null) {
+            if (cartDTO.getQuantity() <= book.getQuantity() ) {
+                double cartPrice = (book.getPrice() * cartDTO.getQuantity());
+                CartData cart = new CartData(user, book, cartPrice, cartDTO);
+                log.info("Item added to cart!");
+                return cartRepository.save(cart);
             }
+            else throw new BookStoreException("Book quantity is not enough!");
         }
-        return null;
+        else {
+            CartData updatedCart = this.updateBookQuantityInCart(existingDataId, cartDTO);
+            return updatedCart;
+        }
     }
 
     @Override
-    public List<Cart> findAll() {
-        List<Cart> cartList = cartRepo.findAll();
-        return cartList;
+    public CartData updateBookQuantityInCart(int cartId, CartDTO cartDTO) {
+        CartData cart = this.getCartByCartId(cartId);
+        BookData book = bookService.getBookModelById(cartDTO.bookId);
+        if (cart.getBook().getQuantity() >= book.getQuantity()) {
+            cart.setQuantity(cartDTO.quantity);
+            cart.setTotalPrice((book.getPrice() * cartDTO.getQuantity()));
+            return cartRepository.save(cart);
+
+            }
+        else {
+            throw new BookStoreException("Book quantity is not enough!");
+        }
     }
 
     @Override
-    public List<Cart> getCartDetailsByUserId(long userId) {
-        List<Cart> userCartList = cartRepo.getCartDetailsByUserId(userId);
-        if(userCartList.isEmpty()){
-            return null;
-        }else
-            return userCartList;
+    public CartData update(int cartId, int quantity){
+        CartData cartModel = cartRepository.findById(cartId).get();
+
+        if (cartRepository.findById(cartId).isPresent() && cartModel.book.getQuantity() >= quantity){
+               cartModel.setQuantity(quantity);
+               cartModel.setTotalPrice(cartModel.getQuantity() * cartModel.getBook().getPrice());
+               return cartRepository.save(cartModel);
+
+        }
+        else   throw new BookStoreException(" book Not found with book Id ");
     }
+
+    @Override
+    public void deleteById(int cartId){
+        CartData cartModel = this.getCartByCartId(cartId);
+        cartRepository.delete(cartModel);
+    }
+
+    @Override
+    public String emptyCart(){
+        cartRepository.deleteAll();
+        return "Your cart is empty..!";
+    }
+
+    @Override
+    public CartData getCartByCartId(int cartId) {
+        return cartRepository.findByCartId(cartId);
+    }
+
 }
