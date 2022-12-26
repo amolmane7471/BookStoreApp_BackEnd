@@ -3545,3 +3545,4 @@ java.sql.SQLSyntaxErrorException: Table 'bookstore_db2.order_data' doesn't exist
 2022-12-26 23:57:29.016  WARN 4932 --- [http-nio-9094-exec-7] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.bridgelabz.bookstoreapp.exception.BookStoreException: Cart details with UserId 18 does not exit..!]
 2022-12-26 23:57:29.029  WARN 4932 --- [http-nio-9094-exec-8] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.bridgelabz.bookstoreapp.exception.BookStoreException: Cart details with UserId 18 does not exit..!]
 2022-12-26 23:57:30.117  INFO 4932 --- [http-nio-9094-exec-10] c.b.bookstoreapp.service.CartService     : Item added to cart!
+2022-12-26 23:57:31.547  INFO 4932 --- [http-nio-9094-exec-7] c.b.bookstoreapp.service.CartService     : Item added to cart!
