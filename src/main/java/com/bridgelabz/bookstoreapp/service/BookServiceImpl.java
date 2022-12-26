@@ -1,83 +1,29 @@
 package com.bridgelabz.bookstoreapp.service;
-
 import com.bridgelabz.bookstoreapp.dto.BookDTO;
-import com.bridgelabz.bookstoreapp.entity.BookData;
-import com.bridgelabz.bookstoreapp.repository.BookRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.bridgelabz.bookstoreapp.model.BookData;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
-public class BookServiceImpl implements IBookService {
+public interface BookServiceImpl {
 
-    @Autowired
-    private BookRepository bookRepository;
+    BookData createBook(BookDTO bookDTO);
 
-    @Autowired
-    private ModelMapper modelMapper;
+    List<BookData> getAllBookData();
 
-    @Override
-    public BookData addBook(BookDTO bookDTO) {
-        BookData bookData = modelMapper.map(bookDTO, BookData.class);
-        return bookRepository.save(bookData);
-    }
+    BookData updateRecordById(BookDTO bookDTO, int bookId);
 
-    @Override
-    public List<BookData> getAllBooks() {
-        List<BookData> allBookData = bookRepository.findAll();
-        return allBookData;
-    }
 
-    @Override
-    public BookData getBookById(Long id) {
-        BookData bookData = bookRepository.findById(id).get();
-        return bookData;
-    }
 
-    @Override
-    public BookData updateBookDetails(Long id, BookDTO bookDTO) {
-        BookData bookDataById = this.getBookById(id);
-        modelMapper.map(bookDTO, bookDataById);
-        bookRepository.save(bookDataById);
-        return bookDataById;
-    }
+    BookData deleteBookRecord(int bookId);
 
-    @Override
-    public BookData removeBookFromStocks(Long id) {
-        BookData bookData = this.getBookById(id);
-        bookRepository.delete(bookData);
-        return bookData;
-    }
+    BookData getBookModelById(int bookId);
 
-    @Override
-    public int getTotalBooksCount() {
-        return bookRepository.findAll().size();
-    }
+    List<BookData> sortedListOfBooksInAscendingOrder();
 
-    @Override
-    public List<BookData> searchByName(String name) {
-        String name1 = name.toLowerCase();
-        List<BookData> bookData = getAllBooks();
-        List<BookData> collect = bookData.stream()
-                .filter(bookDataData -> bookDataData.getBookName().toLowerCase().contains(name1))
-                .collect(Collectors.toList());
-        return collect;
-    }
+    List<BookData> sortedListOfBooksInDescendingOrder();
 
-    @Override
-    public List<BookData> getBookByAscendingPrice() {
-        List<BookData> bookDataDataList = bookRepository.findByOrderAsc();
-        return bookDataDataList;
-    }
 
-    @Override
-    public List<BookData> getBookByDescendingPrice() {
-        List<BookData> bookDataDataList = bookRepository.findByOrderDesc();
-        return bookDataDataList;
-    }
+    int getTotalBooksCount();
+
+    List<BookData> searchByName(String name);
 }

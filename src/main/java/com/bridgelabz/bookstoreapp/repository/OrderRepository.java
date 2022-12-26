@@ -1,14 +1,18 @@
 package com.bridgelabz.bookstoreapp.repository;
 
-import com.bridgelabz.bookstoreapp.entity.OrderData;
+import com.bridgelabz.bookstoreapp.model.OrderData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
 @Repository
-public interface OrderRepository extends JpaRepository<OrderData, Integer> {
-    @Query(value = "select * from order_data where user_id = :userId", nativeQuery = true)
-    List<OrderData> findAllByUserId(long userId);
+public interface OrderRepository extends JpaRepository<OrderData,Integer> {
+    @Query("from orderData WHERE userId=:userId  ")
+    List<OrderData> findByUserId(int userId);
+
+    @Query("from orderData WHERE orderId=:orderId  ")
+    Object findByOrderId(int orderId);
 }

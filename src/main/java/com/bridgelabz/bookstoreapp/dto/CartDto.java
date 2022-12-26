@@ -1,13 +1,15 @@
 package com.bridgelabz.bookstoreapp.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartDto {
-    private long bookId;
-    private long quantity;
+public class CartDTO {
+    public int bookId;
+    public int quantity;
 }
+

@@ -1,89 +1,135 @@
 package com.bridgelabz.bookstoreapp.controller;
 
-
 import com.bridgelabz.bookstoreapp.dto.ResponseDTO;
 import com.bridgelabz.bookstoreapp.dto.UserDTO;
-import com.bridgelabz.bookstoreapp.dto.LoginUser;
-import com.bridgelabz.bookstoreapp.entity.User;
-import com.bridgelabz.bookstoreapp.service.UserService;
-import com.bridgelabz.bookstoreapp.util.EmailSenderService;
+import com.bridgelabz.bookstoreapp.dto.UserLoginDTO;
+import com.bridgelabz.bookstoreapp.model.UserData;
+import com.bridgelabz.bookstoreapp.service.EmailSenderService;
+import com.bridgelabz.bookstoreapp.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.util.List;
 
+@CrossOrigin( allowedHeaders = "*", origins = "*")
+@RequestMapping("/bookstore")
 @RestController
 public class UserController {
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private EmailSenderService emailSenderService;
-    @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
-    @RequestMapping("/welcome")
-    public String welcome(){
-        String text = "Welcome To Book Store !!! ";
-        return text;
+    @Autowired
+    private EmailSenderService senderService;
+
+    /**
+     * @return welcome message
+     * @Purpose : To check simple api call
+     */
+    @RequestMapping(value = {"/welcome", "/", ""})
+    public String welcomeMessage() {
+        return "Welcome to Book Store Application !!!";
     }
 
-    //register a user
+    /**
+     * @return user data and httpStatus
+     * @Purpose : To add / register user in book store application
+     * @Param : UserDTO
+     */
     @PostMapping("/register")
-    public ResponseEntity<User> addUser(@RequestBody UserDTO userDTO){
-        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        User user = userService.addUser(userDTO);
-        return ResponseEntity.ok(user);
-    }
-
-    //fetch all users from db
-    @GetMapping("/getUsers")
-    public ResponseEntity<ResponseDTO> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        ResponseDTO responseDTO = new ResponseDTO("Got all users Successfully", users);
-        return new ResponseEntity<ResponseDTO>(responseDTO, HttpStatus.OK);
-    }
-
-    //retrieve user by their id
-    @GetMapping("/getUser/{id}")
-    public ResponseEntity<ResponseDTO> getUserById(@PathVariable Long id){
-        User userById = userService.getUserById(id);
-        ResponseDTO responseDTO = new ResponseDTO("Got user whose id is " + userById.getId(), userById);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-    }
-
-    //update user by using id
-    @PutMapping("/updateUser/{id}")
-    public ResponseEntity<ResponseDTO> updateUser(@PathVariable Long id ,@RequestBody UserDTO userDTO){
-        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        User updatedUser = this.userService.updateUser(id, userDTO);
-        ResponseDTO responseDTO = new ResponseDTO("User with id "+id+" Updated Successfully",updatedUser);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-    }
-
-    //delete user by using id
-    @DeleteMapping("deleteUser/{id}")
-    public ResponseEntity<ResponseDTO> deleteUser(@PathVariable Long id ){
-        User deletedUser = this.userService.deleteUser(id);
-        ResponseDTO responseDTO = new ResponseDTO("User with id "+id+" Deleted Successfully", deletedUser);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-    }
-
-    @PutMapping("/resetPassword")
-    public ResponseEntity<ResponseDTO> changePassword(@RequestBody LoginUser loginDTO) {
-        String response = userService.resetPassword(loginDTO);
-        ResponseDTO responseDTO = new ResponseDTO("Password successfully changed", response);
-        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-    }
-
-    @PostMapping("/forgotpassword")
-    public ResponseEntity<ResponseDTO> forgotPasswordRequest(@RequestBody LoginUser loginUser) {
-        String otp = userService.forgotPasswordRequest(loginUser.email);
-        ResponseDTO respDTO = new ResponseDTO("Otp sent Succesfully", otp);
+    public ResponseEntity<ResponseDTO> userRegistration(@Valid @RequestBody UserDTO userDTO) {
+        UserData userData = userService.registerUser(userDTO);
+        ResponseDTO respDTO = new ResponseDTO("User created successfully ,check mail & verify",userData);
         return new ResponseEntity(respDTO, HttpStatus.OK);
+    }
+
+    /**
+     * @return user data and httpStatus
+     * @Purpose : To verify otp at the time of registration
+     * @Param : otp
+     */
+    @GetMapping("/verify/email/{otp}")
+    public ResponseEntity<ResponseDTO> otpVerification(@PathVariable Long otp) {
+        ResponseDTO respDTO = userService.verifyOtp(otp);
+        return new ResponseEntity<>(respDTO, HttpStatus.OK);
+    }
+
+    /**
+     * @return user data and httpStatus
+     * @Purpose : To login user
+     * @Param : UserLoginDTO
+     */
+    @PostMapping("/login")
+    public ResponseEntity<ResponseDTO> userLogin(@Valid @RequestBody UserLoginDTO userLoginDTO) {
+        ResponseDTO respDTO = userService.loginUser(userLoginDTO);
+        //String token = (String) respDTO.getData();
+        //httpServletResponse.setHeader("Authorization", token);
+        return new ResponseEntity(respDTO, HttpStatus.OK);
+    }
+
+    /**
+     * @return response and status
+     * @Purpose : To sent forgot password request
+     * @Param : email
+     */
+    @PostMapping("/forgotpassword")
+    public ResponseEntity<ResponseDTO> forgotPasswordRequest(@RequestParam String email) {
+        String otp = userService.forgotPasswordRequest(email);
+        ResponseDTO respDTO = new ResponseDTO("Otp sent Successfully", otp);
+        return new ResponseEntity(respDTO, HttpStatus.OK);
+    }
+
+    /**
+     * @return response and status
+     * @Purpose : To reset password
+     * @Param : password, otp
+     */
+    @PostMapping("/resetpassword/{otp}")
+    public ResponseEntity<ResponseDTO> resetPassword(@RequestParam String password, @PathVariable Long otp) {
+        String newPassword = userService.resetPassword(password, otp);
+        ResponseDTO respDTO = new ResponseDTO("Reset Password", newPassword);
+        return new ResponseEntity<>(respDTO, HttpStatus.OK);
+
+    }
+
+    /**
+     * @return user data list and httpStatus
+     * @Purpose : To get list of all user in book store application
+     */
+    @RequestMapping(value = {"", "/", "/getall"})
+    public ResponseEntity<ResponseDTO> getEmployeePayrollData() {
+        List<UserData> userDataList = null;
+        userDataList = userService.getUserData();
+        ResponseDTO respDTO = new ResponseDTO("Get Call Successful", userDataList);
+        return new ResponseEntity<ResponseDTO>(respDTO, HttpStatus.OK);
+    }
+
+    /**
+     * @return updated user data and httpStatus
+     * @Purpose : To update user data in book store application
+     * @Param : id, UserDTO
+     */
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<ResponseDTO> updateUserData(@PathVariable("userId") Integer userId, @Valid @RequestBody UserDTO userDTO) {
+        UserData userData = userService.updateUserData(userId, userDTO);
+        ResponseDTO respDTO = new ResponseDTO("User Updated Successfully", userData);
+        return new ResponseEntity(respDTO, HttpStatus.OK);
+    }
+
+    /**
+     * @return response and status
+     * @Purpose : To delete user data by in book store application
+     * @Param : id
+     */
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<ResponseDTO> deleteUser(@PathVariable("userId") Integer userId) {
+        userService.deleteUserData(userId);
+        ResponseDTO respDTO = new ResponseDTO("Deleted successfully", "Deleted id: " + userId);
+        return new ResponseEntity<>(respDTO, HttpStatus.OK);
     }
 
 }
