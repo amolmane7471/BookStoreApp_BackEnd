@@ -58,3 +58,4 @@
 2022-12-28 15:56:22.368  WARN 11420 --- [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates or check your Thymeleaf configuration)
 2022-12-28 15:56:22.766  INFO 11420 --- [restartedMain] c.b.b.BookStoreAppApplication            : Started BookStoreAppApplication in 7.115 seconds (JVM running for 8.237)
 2022-12-28 15:56:22.771  INFO 11420 --- [restartedMain] c.b.b.BookStoreAppApplication            : Book Store Application started in DEV Environment
+2022-12-28 15:56:22.774  INFO 11420 --- [restartedMain] c.b.b.BookStoreAppApplication            : Book Store Application DB User is bookstoreuser2 
