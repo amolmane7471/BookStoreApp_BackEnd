@@ -98,7 +98,7 @@ public class UserController {
 
     /**
      * @return user data list and httpStatus
-     * @Purpose : To get list of all user in book store application
+     * @Purpose : To get list of all users in book store application
      */
     @RequestMapping(value = {"", "/", "/getall"})
     public ResponseEntity<ResponseDTO> getEmployeePayrollData() {
