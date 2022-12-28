@@ -13,6 +13,4 @@ public interface OrderRepository extends JpaRepository<OrderData,Integer> {
     @Query("from orderData WHERE userId=:userId  ")
     List<OrderData> findByUserId(int userId);
 
-    @Query("from orderData WHERE orderId=:orderId  ")
-    Object findByOrderId(int orderId);
 }

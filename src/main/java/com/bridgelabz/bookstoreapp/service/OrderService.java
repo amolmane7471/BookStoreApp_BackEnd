@@ -6,17 +6,13 @@ import com.bridgelabz.bookstoreapp.model.BookData;
 import com.bridgelabz.bookstoreapp.model.CartData;
 import com.bridgelabz.bookstoreapp.model.OrderData;
 import com.bridgelabz.bookstoreapp.model.UserData;
-import com.bridgelabz.bookstoreapp.repository.BookRepository;
 import com.bridgelabz.bookstoreapp.repository.CartRepository;
 import com.bridgelabz.bookstoreapp.repository.OrderRepository;
 import com.bridgelabz.bookstoreapp.repository.UserRegistrationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrderService implements IOrderService {
@@ -112,21 +108,16 @@ public class OrderService implements IOrderService {
                     for (int j = 0; j < orderList.size(); j++) {
                         if (orderList.get(j).getOrderId() == orderId) {
                             for (int i = 0; i < book.size(); i++) {
-                        //        for (int k = 0; k < book.size(); k++) {
 
                                     int orderedBookId = orderList.get(j).getCartModel().get(i).getBook().getBookId();
-
+                                    int orderedQuantity = orderList.get(j).getCartModel().get(j).getQuantity();
+                                    System.out.println(orderedQuantity);
                                     int bookId = book.get(i).getBookId();
-                                 //   System.out.println(orderedBookId);
-                                   // System.out.println(bookId);
                                     if (orderedBookId == bookId) {
                                         BookData book1 = bookService.getBookModelById(order.getBook().get(i).getBookId());
-                                        bookService.updateBookQuantity(book1.getBookId(), book1.getQuantity() + order.getQuantity());
-                                         System.out.println(book1.getQuantity());
-                                        System.out.println(order.getQuantity());
+                                        bookService.updateBookQuantity(book1.getBookId(), book1.getQuantity() + orderedQuantity);
                                     }
 
-                              //  }
                             }
                         }
                     }
