@@ -1,5 +1,4 @@
 package com.bridgelabz.bookstoreapp.service;
-
 import com.bridgelabz.bookstoreapp.dto.BookDTO;
 import com.bridgelabz.bookstoreapp.exception.BookStoreException;
 import com.bridgelabz.bookstoreapp.model.BookData;
@@ -55,7 +54,7 @@ public class BookService implements BookServiceImpl {
             return book.get();
 
         } else {
-            return null;     //Order Record doesn't exists
+            return null;
         }
     }
     @Override
