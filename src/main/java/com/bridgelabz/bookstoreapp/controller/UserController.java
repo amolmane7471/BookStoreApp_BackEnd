@@ -109,7 +109,7 @@ public class UserController {
     }
 
     /**
-     * @return updated user data and httpStatus
+     * @return updated user data 
      * @Purpose : To update user data in book store application
      * @Param : id, UserDTO
      */
